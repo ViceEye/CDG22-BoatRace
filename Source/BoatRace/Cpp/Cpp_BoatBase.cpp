@@ -3,13 +3,16 @@
 
 #include "Cpp_BoatBase.h"
 
+#include "BoatRace/Statics/Utils.h"
+
 // Sets default values
 ACpp_BoatBase::ACpp_BoatBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 	BuoyancyComponent = CreateDefaultSubobject<UBuoyancyComponent>("Buoyancy");
+	BoatMesh = CreateDefaultSubobject<UStaticMeshComponent>("BoatMesh");
 }
 
 // Called when the game starts or when spawned
@@ -26,16 +29,36 @@ void ACpp_BoatBase::Tick(float DeltaTime)
 	BuoyancyComponent->EnableTick();
 }
 
-void ACpp_BoatBase::UpdateActorRotation()
+void ACpp_BoatBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	const auto rotation = GetActorRotation();
-	auto velocity = GetVelocity();
-	velocity = FVector(FMath::Abs(velocity.X), velocity.Y, velocity.Z);
-	const auto lerp = FMath::Lerp(rotation, velocity.Rotation(), 0.1);
-	const auto finalRot = FRotator(rotation.Pitch, lerp.Yaw, rotation.Roll);
-	SetActorRotation(finalRot);
+	check(PlayerInputComponent);
+	PlayerInputComponent->BindAxis("MoveForward", this, &ACpp_BoatBase::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &ACpp_BoatBase::MoveRight);
 }
 
+void ACpp_BoatBase::MoveForward(float Value)
+{
+	AddMovementForce(Value, ForwardSpeed, GetActorForwardVector());
+}
+
+void ACpp_BoatBase::MoveRight(float Value)
+{
+	AddMovementForce(Value, TurningSpeed, GetActorRightVector());
+	auto rotation = GetActorRotation();
+	const auto rotateSpeed = Value * TurningSpeed * 0.3f;
+	rotation.Yaw += rotateSpeed;
+	SetActorRelativeRotation(rotation);
+}
+
+void ACpp_BoatBase::AddMovementForce(float Value, float Speed, FVector Direction)
+{
+	if (GetVelocity().Size() < MaximumSpeed)
+	{
+		const auto force = Value * Speed * 500.0f;
+		const auto directionForce = force * Direction;
+		BoatMesh->AddForce(directionForce, "", true);
+	}
+}
 
 void ACpp_BoatBase::ConstructBoatBuoyancy(TArray<UArrowComponent*> Components)
 {
@@ -48,4 +71,3 @@ void ACpp_BoatBase::ConstructBoatBuoyancy(TArray<UArrowComponent*> Components)
 	}
 	BuoyancyComponent->BuoyancyData.bApplyDragForcesInWater = true;
 }
-

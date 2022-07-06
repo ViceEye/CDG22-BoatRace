@@ -19,6 +19,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Components")
 	UBuoyancyComponent* BuoyancyComponent;
 
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Components")
+	UStaticMeshComponent* BoatMesh;
+
 	// Boat Properties
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="BoatProperties")
 	float ForwardSpeed = 1.0f;
@@ -33,8 +36,15 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category="Boat")
-	void UpdateActorRotation();
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/** Called for forwards/backward input */
+	void MoveForward(float Value);
+
+	/** Called for side to side input */
+	void MoveRight(float Value);
+
+	void AddMovementForce(float Value, float Speed, FVector Direction);
 
 public:
 	// Called every frame
