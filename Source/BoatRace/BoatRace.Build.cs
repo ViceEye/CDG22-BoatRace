@@ -8,7 +8,7 @@ public class BoatRace : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "Water" });
+		PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore", "Water" });
 
 		PrivateDependencyModuleNames.AddRange(new[] { "Slate", "SlateCore" });
 	}
